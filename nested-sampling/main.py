@@ -3,6 +3,7 @@ import scipy.constants
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import time
 
 plt.style.use('classic')
 
@@ -13,8 +14,6 @@ def square_func(x):
 
 def multi_minima_func(x):
     return (2 * pow(x, 4)) - (3 * pow(x, 3)) - (7 * pow(x, 2)) + (2 * x) + 1
-
-
 
 #monte-carlo random walk with 1d constraint
 def mc_walk_constrained(pos, max_step_size, e_max, energy_f):
@@ -31,21 +30,43 @@ def mc_walk_constrained(pos, max_step_size, e_max, energy_f):
 
 #1-dimensional nested sampling
 
-def nested_sampling(energy_function, iterations, prior_points):
+def nested_sampling(energy_function, iterations, prior_points, debug):
 
     #local vars
     e = energy_function
     max_energies = []
     replicas = prior_points
 
+    y_lim_max = [e(r) for r in sorted(replicas)][-1]
+
+
+    if debug:
+        fig, ax = plt.subplots()
+
+        # ax.plot(x_axis, density_of_states)
+        
     #main loop (over configurations)
     for n in range (0, iterations):
         #max energy values
         max_energy = 0
-        max_energy_idx = -1
+        max_energy_idx = 0
 
+        if debug:
+            ax.clear()
+            ax.plot(sorted(replicas), [e(r) for r in sorted(replicas)])
+            # ax.scatter(range(0, n), max_energies)
+            plt.xlim(-10, 10)
+            plt.ylim(-20, (y_lim_max * (1/((n + 1)**2)) - 15))
+            # plt.ylim(-30, 30)
+            plt.pause(.000001)
+    
         #inner loop to find max energy with current replicas
         for i in range(len(replicas)):
+            
+            if i == 0:
+                max_energy = e(replicas[i])
+                max_energy_idx = 0
+                continue
 
             replica_energy = e(replicas[i])
             if replica_energy > max_energy:
@@ -57,25 +78,18 @@ def nested_sampling(energy_function, iterations, prior_points):
         del replicas[max_energy_idx]
         random_replica = random.choice(replicas)
         replicas.append(mc_walk_constrained(random_replica, 1, max_energy, e))
+
+
+    plt.show()
     return max_energies
-
-# test_result = nested_sampling(square_func, 1000, [random.uniform(-50, 50) for i in range(100)])
-
-# print("nested sampling ran on square root function with 1000 iterations and 100 prior points:\n whole arrray: " + str(test_result) + "\n\n\n\n\n first: " + str(test_result[0]) + "\n last: " + str(test_result[-1]))
-#
 
 def free_energy():
     iterations = 1000
     k = 100
     sample = [random.uniform(-k/2, k/2) for i in range(k)]
     
-    # fig, ax = plt.subplots()
-    # ax.plot(sorted(sample), [square_func(x) for x in sorted(sample)])
-    # plt.show()
-
-
-    # print(sample)
-    ns_result = nested_sampling(multi_minima_func, iterations, sample)
+    # ns_result = nested_sampling(multi_minima_func, iterations, sample, True)
+    ns_result = nested_sampling(multi_minima_func, iterations, sample, True)
 
     density_of_states = []
     free_energies = []
@@ -97,10 +111,9 @@ def free_energy():
 
     fig, ax = plt.subplots()
 
-    ax.plot(x_axis, free_energies)
+    ax.plot(x_axis, density_of_states)
     plt.show()
 
     return free_energies
 
 free_energy()
-# print("free energy: " + str(free_energy()))
