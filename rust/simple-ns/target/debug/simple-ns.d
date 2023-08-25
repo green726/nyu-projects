@@ -1,1 +1,1 @@
-/home/green726/coding/nyu-projects/rust/simple-ns/target/debug/simple-ns: /home/green726/coding/nyu-projects/rust/simple-ns/src/main.rs
+/home/green726/coding/nyu-projects/rust/simple-ns/target/debug/simple-ns: /home/green726/coding/nyu-projects/rust/simple-ns/src/energy_funcs.rs /home/green726/coding/nyu-projects/rust/simple-ns/src/main.rs /home/green726/coding/nyu-projects/rust/simple-ns/src/util.rs
