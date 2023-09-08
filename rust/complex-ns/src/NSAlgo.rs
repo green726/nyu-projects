@@ -1,26 +1,25 @@
-use ndarray::Array;
 use rand;
 
-pub type Energy_Function<d> = fn(Array<f64, d>, Array<f64, d>) -> Array<f64, ndarray::Array1<f64>>;
+pub type EnergyFunction = fn(Vec<Vec<f64>>) -> f64;
 
-pub struct NS_Config<d> {
-    energy_function: Energy_Function<d>,
-    initial_state: Array<f64, d>,
+pub struct NsConfig {
+    energy_function: EnergyFunction,
+    initial_state: Vec<Vec<f64>>,
     iterations: i32,
     //TODO: implement a struct containing various debug options (debug conf)
     debug: bool,
     rng: rand::rngs::ThreadRng,
 }
 
-pub struct Min_Energy<d> {
+pub struct MinEnergy {
     pub energy: f64,
-    pub state: Array<f64, d>,
+    pub state: Vec<Vec<f64>>,
     pub replica_idx: usize,
 }
 
-pub struct NS_Result<d> {
-    max_energies: Array<f64, ndarray::Array1<f64>>,
-    min_energy: Min_Energy<d>,
+pub struct NsResult {
+    max_energies: Vec<f64>,
+    min_energy: MinEnergy,
 }
 
 // pub fn NS_Algo<d>(config: NS_Config<d>) -> NS_Result<d> {
