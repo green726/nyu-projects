@@ -1,6 +1,6 @@
 use rand;
 
-use crate::{walkers, util};
+use crate::{util, walkers};
 
 pub type EnergyFunction = fn(Vec<f64>) -> f64;
 
@@ -57,12 +57,14 @@ fn max_energy(energy_function: EnergyFunction, state: &Vec<Vec<f64>>) -> (f64, u
 
         if max_energy_idx == 0 {
             max_energy = energy_function(replica);
+            max_energy_idx = i;
             continue;
         }
 
         let energy = energy_function(replica);
         if energy > max_energy {
             max_energy = energy;
+            max_energy_idx = i;
         }
     }
 
@@ -83,6 +85,16 @@ pub fn algo(mut config: NSConfig) -> NSResult {
         },
     };
 
+    let mut energy_plot: plotpy::Plot = plotpy::Plot::new();
+    let mut energy_curve: plotpy::Curve = util::plot_data(
+        &mut energy_plot,
+        Vec::new(),
+        Vec::new(),
+        "Max Energy vs Iteration",
+        "Iteration",
+        "Max Energy",
+    );
+
     for n in 0..config.iterations {
         //find max energy
         let (max_energy, max_energy_idx) = max_energy(e, &states);
@@ -97,11 +109,29 @@ pub fn algo(mut config: NSConfig) -> NSResult {
         // Remove the max energy replica
         states.remove(max_energy_idx);
 
-        let new_replica = walkers::mcmc_walk(e, max_energy, util::random_point(&states, rng), config.walker_config.step_dist, config.walker_config.step_count, rng);
+        let new_replica = walkers::mcmc_walk(
+            e,
+            max_energy,
+            util::random_point(&states, rng),
+            config.walker_config.step_dist,
+            config.walker_config.step_count,
+            rng,
+        );
         states.push(new_replica);
 
         for i in 0..states.len() {
-            states[i] = walkers::mcmc_walk(e, max_energy, states[i].clone(), config.walker_config.step_dist, config.walker_config.step_count, rng);
+            states[i] = walkers::mcmc_walk(
+                e,
+                max_energy,
+                states[i].clone(),
+                config.walker_config.step_dist,
+                config.walker_config.step_count,
+                rng,
+            );
+        }
+
+        if config.debug {
+            util::update_plot(&mut energy_plot, &mut energy_curve, n as f64, max_energy);
         }
     }
 

@@ -14,10 +14,10 @@ fn main() {
 
     let config = NSConfig::new(
         energy_function,
-        states_populate(2, 100, -50.0..50.0, &mut rng),
+        states_populate(2, 100, -10.0..10.0, &mut rng),
         100,
         false,
-        walkers::WalkerConfig::new(0.00001, 1),
+        walkers::WalkerConfig::new(0.000001, 3),
     );
 
     let result = ns_algo::algo(config);

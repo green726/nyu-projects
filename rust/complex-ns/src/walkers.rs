@@ -29,11 +29,12 @@ pub fn mcmc_walk(
 
     let mut new_state: Vec<f64> = starting_state.clone();
 
-    println!("Oh boy - starting mcmc walk");
+    // println!("Oh boy - starting mcmc walk\n step count: {}\n walk dist: {}\n max energy: {}", step_count, walk_dist, max_energy);
 
     for _ in 0..step_count {
         let mut temp_state = new_state.clone();
         while e(temp_state.clone()) >= max_energy {
+            temp_state.clear();
             for c in new_state.iter() {
                 let new_c = c + walk_dist_gen.sample(rng);
                 temp_state.push(new_c);
@@ -42,6 +43,6 @@ pub fn mcmc_walk(
         new_state = temp_state;
     }
 
-    println!("Yay! mcmc walk done!");
+    // println!("Yay! mcmc walk done!");
     return new_state;
 }
