@@ -18,16 +18,30 @@ fn energy_function_complex(state: Vec<f64>) -> f64 {
     return state[0].sin() - (2.0 * state[1].powi(3));
 }
 
+fn energy_function_6d_complex(state: Vec<f64>) -> f64 {
+    return state[0].sin() - (6.1 * state[1].powi(2)) + (1.1 * state[2]).powi(3) - (2.8 * state[3])
+        + (4.1 * state[4].cos())
+        + (state[5].powi(2) * 0.3);
+}
+
 fn main() {
     let mut rng = rand::thread_rng();
 
     let config = NSConfig::new(
         energy_function_complex,
-        states_populate(2, 100, -100.0..100.0, &mut rng),
+        states_populate(6, 1000, -100.0..100.0, &mut rng),
         10000,
         false,
-        walkers::WalkerConfig::new(0.0001, 3),
+        walkers::WalkerConfig::new(0.0001, 4),
     );
+
+    // let config = nsconfig::new(
+    //     energy_function_complex,
+    //     states_populate(2, 100, -100.0..100.0, &mut rng),
+    //     10000,
+    //     false,
+    //     walkers::walkerconfig::new(0.0001, 3),
+    // );
 
     // let config = NSConfig::new(
     //     energy_function_1d,
@@ -43,4 +57,5 @@ fn main() {
 
     let pp_result = post_processing::post_process(ns_result);
     pp_result.graph_free_energies();
+    pp_result.graph_volume();
 }
