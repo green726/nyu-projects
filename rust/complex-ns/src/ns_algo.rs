@@ -47,6 +47,7 @@ pub struct MinEnergy {
 pub struct NSResult {
     pub max_energies: Vec<f64>,
     pub min_energy: MinEnergy,
+    pub k: usize,
 }
 
 fn max_energy(energy_function: EnergyFunction, state: &Vec<Vec<f64>>) -> (f64, usize) {
@@ -84,9 +85,10 @@ pub fn algo(mut config: NSConfig) -> NSResult {
             state: Vec::new(),
             replica_idx: 0,
         },
+        k: config.initial_state.len(),
     };
 
-    let plot_backend = plotting::create_plot_backend();
+    let plot_backend = plotting::create_plot_backend_gif("graphs/maxEnergy_vs_iteration.png");
     let plot_drawing_area = plot_backend.into_drawing_area();
 
     for n in 0..config.iterations {

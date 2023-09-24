@@ -1,7 +1,13 @@
 use plotters::prelude::*;
 
-pub fn create_plot_backend<'a>() -> BitMapBackend<'a> {
-    let backend: BitMapBackend<'_> = BitMapBackend::gif("images/animated.gif", (600, 400), 3).unwrap();
+
+pub fn create_plot_backend_gif<'a>(filename_and_path: &str) -> BitMapBackend<'a> {
+    let backend: BitMapBackend<'_> = BitMapBackend::gif(filename_and_path, (800, 600), 3).unwrap();
+    return backend;
+}
+
+pub fn create_plot_backend_png<'a>(filename_and_path: &'a str) -> BitMapBackend<'a> {
+    let backend: BitMapBackend<'_> = BitMapBackend::new(filename_and_path, (800, 600));
     return backend;
 }
 
@@ -17,6 +23,7 @@ pub fn plot_data_intx(
 
     let mut ctx = ChartBuilder::on(&root_drawing_area)
         .caption(name, ("Arial", 30))
+        .margin(10)
         .set_label_area_size(LabelAreaPosition::Left, 40)
         .set_label_area_size(LabelAreaPosition::Bottom, 40)
         .build_cartesian_2d(x_range, y_range)
@@ -28,7 +35,7 @@ pub fn plot_data_intx(
             .zip(y.iter())
             .map(|(x, y)| (*x as i32, *y as i32)),
         &RED,
-    )).unwrap();
+    ).point_size(2)).unwrap();
 
     root_drawing_area.present().unwrap();
 }
@@ -45,6 +52,7 @@ pub fn plot_data_floatx(
 
     let mut ctx = ChartBuilder::on(&root_drawing_area)
         .caption(name, ("Arial", 30))
+        .margin(10)
         .set_label_area_size(LabelAreaPosition::Left, 40)
         .set_label_area_size(LabelAreaPosition::Bottom, 40)
         .build_cartesian_2d(x_range, y_range)
@@ -56,7 +64,7 @@ pub fn plot_data_floatx(
             .zip(y.iter())
             .map(|(x, y)| (*x as i32, *y as i32)),
         &RED,
-    )).unwrap();
+    ).point_size(2)).unwrap();
 
     root_drawing_area.present().unwrap();
 }
