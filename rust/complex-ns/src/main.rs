@@ -3,6 +3,7 @@ use crate::{ns_algo::NSConfig, util::states_populate};
 mod ns_algo;
 mod walkers;
 mod util;
+mod plotting;
 
 
 fn energy_function(state: Vec<f64>) -> f64 {
@@ -15,14 +16,14 @@ fn main() {
     let config = NSConfig::new(
         energy_function,
         states_populate(2, 100, -10.0..10.0, &mut rng),
-        100,
+        1000,
         false,
         walkers::WalkerConfig::new(0.0001, 3),
     );
 
     let result = ns_algo::algo(config);
 
-    println!("max e: {}", result.max_energies[0]);
+    println!("min e: {}", result.max_energies.last().unwrap());
 }
 
 

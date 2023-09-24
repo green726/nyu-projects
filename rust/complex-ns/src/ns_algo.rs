@@ -1,6 +1,7 @@
 use rand;
 
-use crate::{util, walkers};
+use crate::{util, walkers, plotting};
+use plotters::prelude::*;
 
 pub type EnergyFunction = fn(Vec<f64>) -> f64;
 
@@ -55,7 +56,7 @@ fn max_energy(energy_function: EnergyFunction, state: &Vec<Vec<f64>>) -> (f64, u
     for i in 0..state.len() {
         let replica = state[i].clone();
 
-        if max_energy_idx == 0 {
+        if i == 0 {
             max_energy = energy_function(replica);
             max_energy_idx = i;
             continue;
@@ -84,6 +85,9 @@ pub fn algo(mut config: NSConfig) -> NSResult {
             replica_idx: 0,
         },
     };
+
+    let plot_backend = plotting::create_plot_backend();
+    let plot_drawing_area = plot_backend.into_drawing_area();
 
     for n in 0..config.iterations {
         //find max energy
@@ -121,6 +125,7 @@ pub fn algo(mut config: NSConfig) -> NSResult {
         }
 
         if config.debug {
+            plotting::plot_data_intx("Max Energy", &plot_drawing_area, 0..n, 0..(result.max_energies[0] as i32), (0..n).collect(), result.max_energies.clone());
         }
     }
 

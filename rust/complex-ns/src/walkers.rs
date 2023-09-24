@@ -29,7 +29,7 @@ pub fn mcmc_walk(
 
     let mut new_state: Vec<f64> = starting_state.clone();
 
-    println!("Oh boy - starting mcmc walk\n step count: {}\n walk dist: {}\n max energy: {}", step_count, walk_dist, max_energy);
+    // println!("Oh boy - starting mcmc walk\n step count: {}\n walk dist: {}\n max energy: {}", step_count, walk_dist, max_energy);
 
     for _ in 0..step_count {
         let mut temp_state = new_state.clone();
