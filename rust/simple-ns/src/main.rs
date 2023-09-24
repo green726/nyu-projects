@@ -13,23 +13,23 @@ use plotpy::{Curve, Plot};
 fn main() {
     let mut rng = rand::thread_rng();
     let ns_result = nested_sampling(
-        &energy_funcs::complex_energy_func,
+        &energy_funcs::square,
         1000,
         100,
-        true,
+        false,
         &mut rng,
     );
 
     println!("state count:");
 
-    plot_data(
-        Plot::new(),
-        ns_result.max_energies.clone(),
-        ns_result.state_counts.clone(),
-        "Max Energy vs. # Of States",
-        "Max Energy",
-        "# Of States",
-    );
+    // plot_data(
+    //     Plot::new(),
+    //     ns_result.max_energies.clone(),
+    //     ns_result.state_counts.clone(),
+    //     "Max Energy vs. # Of States",
+    //     "Max Energy",
+    //     "# Of States",
+    // );
 }
 
 fn plot_data(
@@ -118,13 +118,13 @@ fn nested_sampling_algo(
             max_energy,
             replicas.choose(rng).unwrap().clone(),
             0.001,
-            6,
+            3,
             rng,
         );
         replicas.push(new_replica);
 
         for i in 0..replicas.len() {
-            replicas[i] = random_walk(e, max_energy, replicas[i].clone(), 0.001, 6, rng);
+            replicas[i] = random_walk(e, max_energy, replicas[i].clone(), 0.001, 3, rng);
         }
     }
 
