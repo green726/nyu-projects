@@ -17,7 +17,7 @@ fn main() {
         states_populate(2, 100, -10.0..10.0, &mut rng),
         100,
         false,
-        walkers::WalkerConfig::new(0.000001, 3),
+        walkers::WalkerConfig::new(0.0001, 3),
     );
 
     let result = ns_algo::algo(config);

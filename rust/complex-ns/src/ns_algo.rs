@@ -85,16 +85,6 @@ pub fn algo(mut config: NSConfig) -> NSResult {
         },
     };
 
-    let mut energy_plot: plotpy::Plot = plotpy::Plot::new();
-    let mut energy_curve: plotpy::Curve = util::plot_data(
-        &mut energy_plot,
-        Vec::new(),
-        Vec::new(),
-        "Max Energy vs Iteration",
-        "Iteration",
-        "Max Energy",
-    );
-
     for n in 0..config.iterations {
         //find max energy
         let (max_energy, max_energy_idx) = max_energy(e, &states);
@@ -131,7 +121,6 @@ pub fn algo(mut config: NSConfig) -> NSResult {
         }
 
         if config.debug {
-            util::update_plot(&mut energy_plot, &mut energy_curve, n as f64, max_energy);
         }
     }
 
