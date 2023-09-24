@@ -14,12 +14,16 @@ fn energy_function_1d(state: Vec<f64>) -> f64 {
     return state[0].powi(2);
 }
 
+fn energy_function_complex(state: Vec<f64>) -> f64 {
+    return state[0].sin() - (2.0 * state[1].powi(3));
+}
+
 fn main() {
     let mut rng = rand::thread_rng();
 
     let config = NSConfig::new(
-        energy_function,
-        states_populate(2, 100, -10.0..10.0, &mut rng),
+        energy_function_complex,
+        states_populate(2, 100, -100.0..100.0, &mut rng),
         10000,
         false,
         walkers::WalkerConfig::new(0.0001, 3),
