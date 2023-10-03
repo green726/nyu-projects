@@ -1,3 +1,5 @@
+use std::sync::RwLock;
+
 use rand::{distributions::Uniform, prelude::Distribution};
 
 use crate::ns_algo;
@@ -19,7 +21,7 @@ impl WalkerConfig {
 pub fn mcmc_walk(
     energy_function: ns_algo::EnergyFunction,
     max_energy: f64,
-    starting_state: Vec<f64>,
+    starting_state: &RwLock<Vec<f64>>,
     walk_dist: f64,
     step_count: u32,
     rng: &mut rand::rngs::ThreadRng,
@@ -27,7 +29,11 @@ pub fn mcmc_walk(
     let e = energy_function;
     let walk_dist_gen = Uniform::from(-walk_dist..walk_dist);
 
-    let mut new_state: Vec<f64> = starting_state.clone();
+    let mut new_state: Vec<f64> = Vec::new();
+
+    for i in 0..starting_state.read().unwrap().len() {
+        new_state.push(starting_state.read().unwrap()[i].clone());
+    }
 
     // println!("Oh boy - starting mcmc walk\n step count: {}\n walk dist: {}\n max energy: {}", step_count, walk_dist, max_energy);
 
@@ -46,3 +52,4 @@ pub fn mcmc_walk(
     // println!("Yay! mcmc walk done!");
     return new_state;
 }
+

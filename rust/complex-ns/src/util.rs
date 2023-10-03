@@ -1,9 +1,11 @@
+use std::sync::RwLock;
+
 use rand::{distributions::Uniform, prelude::Distribution};
 
-pub fn random_point(state: &Vec<Vec<f64>>, rng: &mut rand::rngs::ThreadRng) -> Vec<f64> {
+pub fn random_point(state: &Vec<RwLock<Vec<f64>>>, rng: &mut rand::rngs::ThreadRng) -> Vec<f64> {
     let state_idx_gen = Uniform::from(0..state.len());
     let state_idx = state_idx_gen.sample(rng);
-    return state[state_idx].clone();
+    return state[state_idx].read().unwrap().clone();
 }
 
 pub fn states_populate(
@@ -11,8 +13,8 @@ pub fn states_populate(
     count: usize,
     range: std::ops::Range<f64>,
     rng: &mut rand::rngs::ThreadRng,
-) -> Vec<Vec<f64>> {
-    let mut states: Vec<Vec<f64>> = Vec::new();
+) -> Vec<RwLock<Vec<f64>>> {
+    let mut states: Vec<RwLock<Vec<f64>>> = Vec::new();
     let dist = Uniform::from(range);
 
     for _ in 0..count {
@@ -20,10 +22,12 @@ pub fn states_populate(
         for _ in 0..dimensions {
             sample.push(dist.sample(rng));
         }
-        states.push(sample);
+        states.push(RwLock::new(sample));
     }
 
     println!("Initial States Have Been Uniformly Populated");
 
     return states;
 }
+
+
