@@ -35,7 +35,6 @@ pub fn mcmc_walk(
         new_state.push(starting_state.read().unwrap()[i].clone());
     }
 
-    // println!("Oh boy - starting mcmc walk\n step count: {}\n walk dist: {}\n max energy: {}", step_count, walk_dist, max_energy);
 
     for _ in 0..step_count {
         let mut temp_state = new_state.clone();
@@ -49,7 +48,6 @@ pub fn mcmc_walk(
         new_state = temp_state;
     }
 
-    // println!("Yay! mcmc walk done!");
     return new_state;
 }
 

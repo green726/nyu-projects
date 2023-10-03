@@ -36,28 +36,31 @@ fn main() {
     //     walkers::WalkerConfig::new(0.0001, 4),
     // );
 
-    // let config = nsconfig::new(
-    //     energy_function_complex,
-    //     states_populate(2, 100, -100.0..100.0, &mut rng),
-    //     10000,
-    //     false,
-    //     walkers::walkerconfig::new(0.0001, 3),
-    // );
 
+    let n = 100;
     let config = NSConfig::new(
-        energy_function_1d,
-        states_populate(1, 100, -50.0..50.0, &mut rng),
-        100,
+        energy_function_complex,
+        states_populate(2, n, -100.0..100.0, &mut rng),
+        n,
         10000,
         false,
-        walkers::WalkerConfig::new(0.0001, 1),
+        walkers::WalkerConfig::new(0.0001, 3),
     );
+
+    // let config = NSConfig::new(
+    //     energy_function_1d,
+    //     states_populate(1, n, -10.0..10.0, &mut rng),
+    //     n, //n
+    //     1000, //i
+    //     false,
+    //     walkers::WalkerConfig::new(0.001, 3),
+    // );
 
     let ns_result = ns_algo::algo(config);
 
     println!("min e: {}", ns_result.max_energies.last().unwrap());
 
-    // let pp_result = post_processing::post_process(ns_result);
-    // pp_result.graph_free_energies();
-    // pp_result.graph_volume();
+    let pp_result = post_processing::post_process(ns_result);
+    pp_result.graph_free_energies();
+    pp_result.graph_volume();
 }

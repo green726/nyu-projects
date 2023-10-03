@@ -94,7 +94,7 @@ pub fn algo(mut config: NSConfig) -> NSResult {
         k: config.initial_len,
     };
 
-    let plot_backend = plotting::create_plot_backend_gif("graphs/maxEnergy_vs_iteration.png");
+    let plot_backend = plotting::create_plot_backend_gif("graphs/maxEnergy_vs_iteration.gif");
     let plot_drawing_area = plot_backend.into_drawing_area();
 
     for n in 0..config.iterations {
