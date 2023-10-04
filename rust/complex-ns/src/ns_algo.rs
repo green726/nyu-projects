@@ -133,6 +133,8 @@ pub fn algo(mut config: NSConfig) -> NSResult {
         if config.debug {
             plotting::plot_data_intx("Max Energy", &plot_drawing_area, 0..n, 0..(result.max_energies[0] as i32), (0..n).collect(), result.max_energies.clone());
         }
+        // println!("max_energy: {}", max_energy);
+        
     }
 
     return result;
