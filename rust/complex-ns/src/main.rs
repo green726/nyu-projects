@@ -35,19 +35,38 @@ fn gaussian_superposition_1d(state: Vec<f64>) -> f64 {
     //range: [-5, 10]
 }
 
+fn sinusoidal_product_4d(state: Vec<f64>) -> f64 {
+    return state[0].sin() * state[1].sin() * state[2].sin() * state[3].sin();
+}
+
 
 fn main() {
     let mut rng = rand::thread_rng();
 
-    let n = 1000;
+
+    // // 1d gaussian superposition
+    // let n = 1000;
+    // let config = NSConfig::new(
+    //     gaussian_superposition_1d,
+    //     states_populate(1, n, -5.0..10.0, &mut rng),
+    //     n,
+    //     10000,
+    //     false,
+    //     walkers::WalkerConfig::new(0.0001, 3),
+    // );
+   
+    //4d sinusoidal
+    let n = 100;
     let config = NSConfig::new(
-        gaussian_superposition_1d,
-        states_populate(1, n, -5.0..10.0, &mut rng),
+        sinusoidal_product_4d,
+        states_populate(4, n, -5.0..5.0, &mut rng),
         n,
-        10000,
+        50000,
         false,
-        walkers::WalkerConfig::new(0.0001, 3),
+        walkers::WalkerConfig::new(0.001, 3),
     );
+
+
 
     // let config = NSConfig::new(
     //     energy_function_1d,
@@ -65,4 +84,5 @@ fn main() {
     let pp_result = post_processing::post_process(ns_result);
     pp_result.graph_free_energies();
     pp_result.graph_volume();
+    pp_result.graph_density_of_states();
 }

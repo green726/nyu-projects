@@ -2,7 +2,7 @@ use std::sync::RwLock;
 
 use rand;
 
-use crate::{util, walkers, plotting};
+use crate::{plotting, util, walkers};
 use plotters::prelude::*;
 use rayon::prelude::*;
 
@@ -97,7 +97,10 @@ pub fn algo(mut config: NSConfig) -> NSResult {
     let plot_backend = plotting::create_plot_backend_gif("graphs/maxEnergy_vs_iteration.gif");
     let plot_drawing_area = plot_backend.into_drawing_area();
 
+    let mut iterations_vec: Vec<f64> = Vec::new();
+
     for n in 0..config.iterations {
+        iterations_vec.push(n as f64);
         //find max energy
         let (max_energy, max_energy_idx) = max_energy(e, &states);
         result.max_energies.push(max_energy);
@@ -123,7 +126,14 @@ pub fn algo(mut config: NSConfig) -> NSResult {
 
         states.par_iter_mut().for_each(|replica| {
             let rng = &mut rand::thread_rng();
-            *replica = RwLock::new(walkers::mcmc_walk(e, max_energy, replica, config.walker_config.step_dist, config.walker_config.step_count, rng));
+            *replica = RwLock::new(walkers::mcmc_walk(
+                e,
+                max_energy,
+                replica,
+                config.walker_config.step_dist,
+                config.walker_config.step_count,
+                rng,
+            ));
         });
 
         // for i in 0..states.len() {
@@ -131,10 +141,16 @@ pub fn algo(mut config: NSConfig) -> NSResult {
         // }
 
         if config.debug {
-            plotting::plot_data_intx("Max Energy", &plot_drawing_area, 0..n, 0..(result.max_energies[0] as i32), (0..n).collect(), result.max_energies.clone());
+            plotting::plot_data(
+                "Max Energy",
+                &plot_drawing_area,
+                0.0..(n as f64),
+                -result.max_energies[0]..(result.max_energies[0]),
+                iterations_vec.clone(),
+                result.max_energies.clone(),
+            );
+            println!("max_energy: {}", max_energy);
         }
-        // println!("max_energy: {}", max_energy);
-        
     }
 
     return result;
