@@ -30,6 +30,7 @@ impl GraphResults for PostProcessingResult {
             y_range,
             self.average_max_energies.clone().into_iter().rev().collect(),
             self.free_energies.clone().into_iter().rev().collect(),
+            plotting::Scale::LinearXLogY,
         );
     }
 
@@ -45,8 +46,9 @@ impl GraphResults for PostProcessingResult {
             &drawing_area,
             x_range,
             y_range,
-            self.average_max_energies.clone().into_iter().rev().collect(),
-            self.density_of_states.clone().into_iter().rev().collect(),
+            self.average_max_energies.clone()/* .into_iter().rev().collect() */,
+            self.density_of_states.clone()/* .into_iter().rev().collect() */,
+            plotting::Scale::LinearBoth
         );
     }
 
@@ -63,6 +65,7 @@ impl GraphResults for PostProcessingResult {
             y_range,
             self.max_energies.clone().into_iter().rev().collect(),
             self.volume.clone().into_iter().rev().collect(),
+            plotting::Scale::LinearBoth,
         );
     }
 }
@@ -74,7 +77,7 @@ pub fn post_process(ns_result: ns_algo::NSResult) -> PostProcessingResult {
     let mut free_energies: Vec<f64> = Vec::new();
     for i in 0..ns_result.max_energies.len() {
         let k_f = ns_result.k as f64;
-        let density_of_state = (1.0 / (k_f + 1.0) * (k_f / (k_f + 1.0)).powf(i as f64));
+        let density_of_state = (1.0 / (k_f + 1.0)) * (k_f / (k_f + 1.0)).powf(i as f64);
         density_of_states.push(density_of_state);
 
         //TODO: account for the beta function in the free energy

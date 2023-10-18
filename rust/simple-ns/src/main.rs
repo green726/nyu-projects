@@ -16,11 +16,11 @@ fn main() {
         &energy_funcs::square,
         1000,
         100,
-        false,
+        true,
         &mut rng,
     );
 
-    println!("state count:");
+    println!("min energy: {}", ns_result.min_energy.energy);
 
     // plot_data(
     //     Plot::new(),
@@ -102,7 +102,7 @@ fn nested_sampling_algo(
         let (max_energy, max_energy_idx) = max_energy(e, replicas.clone());
         max_energies.push(max_energy);
 
-        if n == iterations {
+        if n == iterations - 1 {
             min_energy = MinEnergy {
                 energy: max_energy,
                 state: replicas[max_energy_idx],
@@ -167,6 +167,7 @@ fn free_energy(
 
     let avg_energies = avg_energy(max_energies.clone());
     if debug {
+        println!("avg max energy 0: {}", avg_energies[0]);
         plot_data(
             Plot::new(),
             avg_energies.clone(),

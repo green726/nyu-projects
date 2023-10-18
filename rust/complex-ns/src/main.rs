@@ -31,12 +31,12 @@ fn gaussian_superposition_2d(state: Vec<f64>) -> f64 {
 }
 
 fn gaussian_superposition_1d(state: Vec<f64>) -> f64 {
-    return gaussian_1d(10.0, 4.0, 5.0, state.clone()) + gaussian_1d(-4.0, 3.0, 3.0, state.clone()) + gaussian_1d(2.0, 1.0, 2.0, state.clone());
+    return gaussian_1d(10.0, 4.0, 5.0, state.clone()) /* + gaussian_1d(-4.0, 3.0, 3.0, state.clone()) + gaussian_1d(2.0, 1.0, 2.0, state.clone()) */;
     //range: [-5, 10]
 }
 
 fn sinusoidal_product_4d(state: Vec<f64>) -> f64 {
-    return state[0].sin() * state[1].sin() * state[2].sin() * state[3].sin();
+    return state[0].sin()/*  * state[1].sin() * state[2].sin() * state[3].sin(); */
 }
 
 
@@ -44,27 +44,27 @@ fn main() {
     let mut rng = rand::thread_rng();
 
 
-    // // 1d gaussian superposition
+    // 1d gaussian superposition
+    let n = 1000;
+    let config = NSConfig::new(
+        gaussian_superposition_1d,
+        states_populate(1, n, -5.0..10.0, &mut rng),
+        n,
+        10000,
+        false,
+        walkers::WalkerConfig::new(0.0001, 3),
+    );
+   
+    //4d sinusoidal
     // let n = 1000;
     // let config = NSConfig::new(
-    //     gaussian_superposition_1d,
-    //     states_populate(1, n, -5.0..10.0, &mut rng),
+    //     sinusoidal_product_4d,
+    //     states_populate(1, n, -3.0..-0.1, &mut rng),
     //     n,
     //     10000,
     //     false,
-    //     walkers::WalkerConfig::new(0.0001, 3),
+    //     walkers::WalkerConfig::new(0.001, 3),
     // );
-   
-    //4d sinusoidal
-    let n = 100;
-    let config = NSConfig::new(
-        sinusoidal_product_4d,
-        states_populate(4, n, -5.0..5.0, &mut rng),
-        n,
-        50000,
-        false,
-        walkers::WalkerConfig::new(0.001, 3),
-    );
 
 
 

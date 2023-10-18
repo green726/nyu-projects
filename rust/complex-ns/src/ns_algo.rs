@@ -148,6 +148,7 @@ pub fn algo(mut config: NSConfig) -> NSResult {
                 -result.max_energies[0]..(result.max_energies[0]),
                 iterations_vec.clone(),
                 result.max_energies.clone(),
+                plotting::Scale::LinearBoth,
             );
             println!("max_energy: {}", max_energy);
         }

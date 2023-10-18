@@ -1,5 +1,4 @@
-use plotters::prelude::*;
-
+use plotters::{coord::types::RangedCoordf64, prelude::*};
 
 pub fn create_plot_backend_gif<'a>(filename_and_path: &str) -> BitMapBackend<'a> {
     let backend: BitMapBackend<'_> = BitMapBackend::gif(filename_and_path, (800, 600), 1).unwrap();
@@ -11,6 +10,13 @@ pub fn create_plot_backend_png<'a>(filename_and_path: &'a str) -> BitMapBackend<
     return backend;
 }
 
+pub enum Scale {
+    LinearBoth,
+    LogBoth,
+    LinearXLogY,
+    LogXLinearY,
+}
+
 pub fn plot_data(
     name: &str,
     root_drawing_area: &DrawingArea<BitMapBackend<'_>, plotters::coord::Shift>,
@@ -18,24 +24,98 @@ pub fn plot_data(
     y_range: std::ops::Range<f64>,
     x: Vec<f64>,
     y: Vec<f64>,
+    scale: Scale,
 ) {
     root_drawing_area.fill(&WHITE).unwrap();
 
-    let mut ctx = ChartBuilder::on(&root_drawing_area)
-        .caption(name, ("Arial", 30))
-        .margin(10)
-        .set_label_area_size(LabelAreaPosition::Left, 40)
-        .set_label_area_size(LabelAreaPosition::Bottom, 40)
-        .build_cartesian_2d(x_range, y_range)
-        .unwrap();
-    ctx.configure_mesh().draw().unwrap();
+    let mut x_range_final: RangedCoordf64;
+    let mut y_range_final: RangedCoordf64;
 
-    ctx.draw_series(LineSeries::new(
-        x.iter()
-            .zip(y.iter())
-            .map(|(x, y)| (*x as f64, *y as f64)),
-        &RED,
-    ).point_size(2)).unwrap();
+    match scale {
+        Scale::LinearBoth => {
+            let mut ctx = ChartBuilder::on(&root_drawing_area)
+                .caption(name, ("Arial", 30))
+                .margin(10)
+                .set_label_area_size(LabelAreaPosition::Left, 40)
+                .set_label_area_size(LabelAreaPosition::Bottom, 40)
+                .build_cartesian_2d(x_range, y_range)
+                .unwrap();
+            ctx.configure_mesh().draw().unwrap();
 
-    root_drawing_area.present().unwrap();
+            ctx.draw_series(
+                LineSeries::new(
+                    x.iter().zip(y.iter()).map(|(x, y)| (*x as f64, *y as f64)),
+                    &RED,
+                )
+                .point_size(2),
+            )
+            .unwrap();
+
+            root_drawing_area.present().unwrap();
+        }
+        Scale::LogBoth => {
+            let mut ctx = ChartBuilder::on(&root_drawing_area)
+                .caption(name, ("Arial", 30))
+                .margin(10)
+                .set_label_area_size(LabelAreaPosition::Left, 40)
+                .set_label_area_size(LabelAreaPosition::Bottom, 40)
+                .build_cartesian_2d(x_range.log_scale(), y_range.log_scale())
+                .unwrap();
+            ctx.configure_mesh().draw().unwrap();
+
+            ctx.draw_series(
+                LineSeries::new(
+                    x.iter().zip(y.iter()).map(|(x, y)| (*x as f64, *y as f64)),
+                    &RED,
+                )
+                .point_size(2),
+            )
+            .unwrap();
+
+            root_drawing_area.present().unwrap();
+        }
+        Scale::LogXLinearY => {
+            let mut ctx = ChartBuilder::on(&root_drawing_area)
+                .caption(name, ("Arial", 30))
+                .margin(10)
+                .set_label_area_size(LabelAreaPosition::Left, 40)
+                .set_label_area_size(LabelAreaPosition::Bottom, 40)
+                .build_cartesian_2d(x_range.log_scale(), y_range)
+                .unwrap();
+            ctx.configure_mesh().draw().unwrap();
+
+            ctx.draw_series(
+                LineSeries::new(
+                    x.iter().zip(y.iter()).map(|(x, y)| (*x as f64, *y as f64)),
+                    &RED,
+                )
+                .point_size(2),
+            )
+            .unwrap();
+
+            root_drawing_area.present().unwrap();
+        }
+        Scale::LinearXLogY => {
+            let mut ctx = ChartBuilder::on(&root_drawing_area)
+                .caption(name, ("Arial", 30))
+                .margin(10)
+                .set_label_area_size(LabelAreaPosition::Left, 40)
+                .set_label_area_size(LabelAreaPosition::Bottom, 40)
+                .build_cartesian_2d(x_range, y_range.log_scale())
+                .unwrap();
+            ctx.configure_mesh().draw().unwrap();
+
+            ctx.draw_series(
+                LineSeries::new(
+                    x.iter().zip(y.iter()).map(|(x, y)| (*x as f64, *y as f64)),
+                    &RED,
+                )
+                .point_size(2),
+            )
+            .unwrap();
+
+            root_drawing_area.present().unwrap();
+
+        }
+    }
 }
