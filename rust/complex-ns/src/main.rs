@@ -39,21 +39,36 @@ fn sinusoidal_product_4d(state: Vec<f64>) -> f64 {
     return state[0].sin()/*  * state[1].sin() * state[2].sin() * state[3].sin(); */
 }
 
+fn harmonic_potential_4d(state: Vec<f64>) -> f64 {
+    return (0.5) * (state[0].powi(2) + state[1].powi(2) + state[2].powi(2) + state[3].powi(2));
+}
+
 
 fn main() {
     let mut rng = rand::thread_rng();
 
-
-    // 1d gaussian superposition
+    //4d harmonic potential
     let n = 1000;
     let config = NSConfig::new(
-        gaussian_superposition_1d,
-        states_populate(1, n, -5.0..10.0, &mut rng),
+        harmonic_potential_4d,
+        states_populate(2, n, -0.1..0.1, &mut rng),
         n,
         10000,
         false,
-        walkers::WalkerConfig::new(0.0001, 3),
+        walkers::WalkerConfig::new(0.001, 1),
     );
+
+
+    // 1d gaussian superposition
+    // let n = 1000;
+    // let config = NSConfig::new(
+    //     gaussian_superposition_1d,
+    //     states_populate(1, n, -5.0..10.0, &mut rng),
+    //     n,
+    //     10000,
+    //     false,
+    //     walkers::WalkerConfig::new(0.0001, 3),
+    // );
    
     //4d sinusoidal
     // let n = 1000;
