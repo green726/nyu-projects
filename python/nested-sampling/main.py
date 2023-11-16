@@ -86,10 +86,10 @@ def nested_sampling(energy_function, iterations, prior_points, debug):
 def free_energy():
     iterations = 1000
     k = 100
-    sample = [random.uniform(-k/2, k/2) for i in range(k)]
+    sample = [random.uniform(0.0, 1.0) for i in range(k)]
     
     # ns_result = nested_sampling(multi_minima_func, iterations, sample, True)
-    ns_result = nested_sampling(multi_minima_func, iterations, sample, True)
+    ns_result = nested_sampling(square_func, iterations, sample, False)
 
     density_of_states = []
     free_energies = []

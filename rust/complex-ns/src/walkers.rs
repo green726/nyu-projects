@@ -40,9 +40,9 @@ pub fn mcmc_walk(
         let mut temp_state = new_state.clone();
         while e(temp_state.clone()) >= max_energy {
             temp_state.clear();
-            for c in new_state.iter() {
-                let new_c = c + walk_dist_gen.sample(rng);
-                temp_state.push(new_c);
+            for d in new_state.iter() {
+                let new_d = d + walk_dist_gen.sample(rng);
+                temp_state.push(new_d);
             }
         }
         new_state = temp_state;

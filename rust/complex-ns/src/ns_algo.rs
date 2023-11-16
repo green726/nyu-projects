@@ -17,6 +17,7 @@ pub struct NSConfig {
     debug: bool,
     rng: rand::rngs::ThreadRng,
     walker_config: walkers::WalkerConfig,
+    dimensions: usize,
 }
 
 impl NSConfig {
@@ -27,6 +28,7 @@ impl NSConfig {
         iterations: i32,
         debug: bool,
         walker_config: walkers::WalkerConfig,
+        dimensions: usize,
     ) -> NSConfig {
         if initial_states.len() < 2 {
             panic!("initial_states must have at least 2 replicas");
@@ -40,6 +42,7 @@ impl NSConfig {
             debug,
             rng: rand::thread_rng(),
             walker_config,
+            dimensions,
         };
     }
 }
@@ -54,6 +57,8 @@ pub struct NSResult {
     pub max_energies: Vec<f64>,
     pub min_energy: MinEnergy,
     pub k: usize,
+    pub iterations: i32,
+    pub dimensions: usize,
 }
 
 fn max_energy(energy_function: EnergyFunction, state: &Vec<RwLock<Vec<f64>>>) -> (f64, usize) {
@@ -92,6 +97,8 @@ pub fn algo(mut config: NSConfig) -> NSResult {
             replica_idx: 0,
         },
         k: config.initial_len,
+        iterations: config.iterations,
+        dimensions: config.dimensions,
     };
 
     let plot_backend = plotting::create_plot_backend_gif("graphs/maxEnergy_vs_iteration.gif");
@@ -148,7 +155,7 @@ pub fn algo(mut config: NSConfig) -> NSResult {
                 -result.max_energies[0]..(result.max_energies[0]),
                 iterations_vec.clone(),
                 result.max_energies.clone(),
-                plotting::Scale::LinearBoth,
+                plotting::Scale::LinearLinear,
             );
             println!("max_energy: {}", max_energy);
         }

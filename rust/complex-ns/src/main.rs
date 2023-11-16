@@ -1,4 +1,4 @@
-use crate::{ns_algo::NSConfig, post_processing::GraphResults, util::states_populate};
+use crate::{ns_algo::NSConfig, post_processing::{GraphResults, SpitResults}, util::states_populate};
 
 mod ns_algo;
 mod plotting;
@@ -39,31 +39,99 @@ fn sinusoidal_product_4d(state: Vec<f64>) -> f64 {
     return state[0].sin()/*  * state[1].sin() * state[2].sin() * state[3].sin(); */
 }
 
+fn harmonic_potential(state: Vec<f64>) -> f64 {
+    return (0.5) * (state[0].powi(2) + state[1].powi(2) + state[2].powi(2) + state[3].powi(2) + state[4].powi(2) + state[5].powi(2) + state[6].powi(2) + state[7].powi(2));
+}
+
+fn harmonic_potential_1d(state: Vec<f64>) -> f64 {
+    return (0.5) * (state[0].powi(2));
+}
+
+fn harmonic_potential_3d(state: Vec<f64>) -> f64 {
+    return (0.5) * (state[0].powi(2) + state[1].powi(2) + state[2].powi(2));
+}
+
+fn harmonic_potential_2d(state: Vec<f64>) -> f64 {
+    return (0.5) * (state[0].powi(2) + state[1].powi(2));
+}
+
 fn harmonic_potential_4d(state: Vec<f64>) -> f64 {
     return (0.5) * (state[0].powi(2) + state[1].powi(2) + state[2].powi(2) + state[3].powi(2));
 }
+
+fn harmonic_potential_5d(state: Vec<f64>) -> f64 {
+    return (0.5) * (state[0].powi(2) + state[1].powi(2) + state[2].powi(2) + state[3].powi(2) + state[4].powi(2));
+}
+
 
 
 fn main() {
     let mut rng = rand::thread_rng();
 
-    //4d harmonic potential
-    let n = 1000;
+    //harmonic potential 1d
+    // let n = 1000;
+    // let config = NSConfig::new(
+    //     harmonic_potential_1d,
+    //     states_populate(1, n, -2.0..2.0, &mut rng),
+    //     n,
+    //     100000,
+    //     false,
+    //     walkers::WalkerConfig::new(0.0000001, 1),
+    // );
+
+
+    // harmonic potential 2d
+    let n = 6000;
     let config = NSConfig::new(
-        harmonic_potential_4d,
-        states_populate(2, n, -0.1..0.1, &mut rng),
+        harmonic_potential_2d,
+        states_populate(2, n, 0.0..30.0, &mut rng),
         n,
-        10000,
+        75000,
         false,
-        walkers::WalkerConfig::new(0.001, 1),
+        walkers::WalkerConfig::new(0.00001, 1),
+        2,
     );
+
+    //harmonic potential 3d
+    // let n = 4000;
+    // let config = NSConfig::new(
+    //     harmonic_potential_3d,
+    //     states_populate(3, n, 0.0..60.0, &mut rng),
+    //     n,
+    //     400000,
+    //     false,
+    //     walkers::WalkerConfig::new(0.001, 2),
+    // );
+
+    
+    //harmonic potential 4d
+    // let n = 2000;
+    // let config = NSConfig::new(
+    //     harmonic_potential_4d,
+    //     states_populate(4, n, 0.0..20.0, &mut rng),
+    //     n,
+    //     100000,
+    //     false,
+    //     walkers::WalkerConfig::new(0.001, 1),
+    // );
+
+    //harmonic potential 5d
+    // let n = 2000;
+    // let config = NSConfig::new(
+    //     harmonic_potential_5d,
+    //     states_populate(5, n, 0.0..20.0, &mut rng),
+    //     n,
+    //     300000,
+    //     false,
+    //     walkers::WalkerConfig::new(0.00001, 1),
+    // );
 
 
     // 1d gaussian superposition
     // let n = 1000;
     // let config = NSConfig::new(
     //     gaussian_superposition_1d,
-    //     states_populate(1, n, -5.0..10.0, &mut rng),
+    //     states_populate(1, n, -3.0..6.0, &mut rng),
     //     n,
     //     10000,
     //     false,
@@ -97,7 +165,10 @@ fn main() {
     println!("min e: {}", ns_result.max_energies.last().unwrap());
 
     let pp_result = post_processing::post_process(ns_result);
-    pp_result.graph_free_energies();
-    pp_result.graph_volume();
-    pp_result.graph_density_of_states();
+    // pp_result.graph_free_energies();
+    // pp_result.graph_volume();
+    // pp_result.graph_density_of_states();
+    // pp_result.graph_ge_de();
+    // pp_result.spit_ge_de();
+    // pp_result.spit_max_energy();
 }

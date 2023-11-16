@@ -1,7 +1,7 @@
 use plotters::{coord::types::RangedCoordf64, prelude::*};
 
 pub fn create_plot_backend_gif<'a>(filename_and_path: &str) -> BitMapBackend<'a> {
-    let backend: BitMapBackend<'_> = BitMapBackend::gif(filename_and_path, (800, 600), 1).unwrap();
+    let backend: BitMapBackend<'_> = BitMapBackend::gif(filename_and_path, (800, 600), 0).unwrap();
     return backend;
 }
 
@@ -11,8 +11,8 @@ pub fn create_plot_backend_png<'a>(filename_and_path: &'a str) -> BitMapBackend<
 }
 
 pub enum Scale {
-    LinearBoth,
-    LogBoth,
+    LinearLinear,
+    LogLog,
     LinearXLogY,
     LogXLinearY,
 }
@@ -28,11 +28,8 @@ pub fn plot_data(
 ) {
     root_drawing_area.fill(&WHITE).unwrap();
 
-    let mut x_range_final: RangedCoordf64;
-    let mut y_range_final: RangedCoordf64;
-
     match scale {
-        Scale::LinearBoth => {
+        Scale::LinearLinear => {
             let mut ctx = ChartBuilder::on(&root_drawing_area)
                 .caption(name, ("Arial", 30))
                 .margin(10)
@@ -53,7 +50,7 @@ pub fn plot_data(
 
             root_drawing_area.present().unwrap();
         }
-        Scale::LogBoth => {
+        Scale::LogLog => {
             let mut ctx = ChartBuilder::on(&root_drawing_area)
                 .caption(name, ("Arial", 30))
                 .margin(10)
