@@ -18,6 +18,27 @@ pub struct NSConfig {
     rng: rand::rngs::ThreadRng,
     walker_config: walkers::WalkerConfig,
     dimensions: usize,
+    end_condition: EndConditionConfig,
+}
+
+pub enum EndCondition {
+    Avg,
+    ValueTolerance,
+}
+pub struct EndConditionConfig {
+    typ: EndCondition,
+    avg_k: usize,
+    avg_tolerance: f64,
+}
+
+impl EndConditionConfig {
+    pub fn new(typ: EndCondition, avg_k: usize, avg_tolerance: f64) -> EndConditionConfig {
+        return EndConditionConfig {
+            typ,
+            avg_k,
+            avg_tolerance,
+        };
+    }
 }
 
 impl NSConfig {
@@ -29,6 +50,7 @@ impl NSConfig {
         debug: bool,
         walker_config: walkers::WalkerConfig,
         dimensions: usize,
+        end_condition: EndConditionConfig,
     ) -> NSConfig {
         if initial_states.len() < 2 {
             panic!("initial_states must have at least 2 replicas");
@@ -43,6 +65,7 @@ impl NSConfig {
             rng: rand::thread_rng(),
             walker_config,
             dimensions,
+            end_condition,
         };
     }
 }
@@ -106,60 +129,97 @@ pub fn algo(mut config: NSConfig) -> NSResult {
 
     let mut iterations_vec: Vec<f64> = Vec::new();
 
-    for n in 0..config.iterations {
-        iterations_vec.push(n as f64);
-        //find max energy
-        let (max_energy, max_energy_idx) = max_energy(e, &states);
-        result.max_energies.push(max_energy);
+    'main_loop: {
+        for n in 0..config.iterations {
+            iterations_vec.push(n as f64);
+            //find max energy
+            let (max_energy, max_energy_idx) = max_energy(e, &states);
+            result.max_energies.push(max_energy);
 
-        if n == config.iterations - 1 {
-            result.min_energy.energy = max_energy;
-            result.min_energy.state = states[max_energy_idx].read().unwrap().clone();
-            result.min_energy.replica_idx = max_energy_idx;
-        }
+            if n == config.iterations - 1 {
+                result.min_energy.energy = max_energy;
+                result.min_energy.state = states[max_energy_idx].read().unwrap().clone();
+                result.min_energy.replica_idx = max_energy_idx;
+            }
 
-        // Remove the max energy replica
-        states.remove(max_energy_idx);
+            // Remove the max energy replica
+            states.remove(max_energy_idx);
 
-        let new_replica = RwLock::new(walkers::mcmc_walk(
-            e,
-            max_energy,
-            &RwLock::new(util::random_point(&states, rng)),
-            config.walker_config.step_dist,
-            config.walker_config.step_count,
-            rng,
-        ));
-        states.push(new_replica);
+            match config.end_condition.typ {
+                EndCondition::ValueTolerance => {
+                    let tolerance = config.end_condition.avg_tolerance;
+                    if max_energy < tolerance {
+                        result.k = states.len();
+                        result.iterations = n;
+                        break 'main_loop;
+                    }
+                }
+                EndCondition::Avg => 'avg_cond: {
+                    let k = config.end_condition.avg_k;
+                    let tolerance = config.end_condition.avg_tolerance;
 
-        states.par_iter_mut().for_each(|replica| {
-            let rng = &mut rand::thread_rng();
-            *replica = RwLock::new(walkers::mcmc_walk(
+                    if result.max_energies.len() < k + 1 {
+                        break 'avg_cond;
+                    }
+
+                    let mut sum = 0.0;
+                    for i in 0..k {
+                        let de = result.max_energies[result.max_energies.len() - i - 1] - result.max_energies[result.max_energies.len() - i - 2];
+                        sum += de;
+                    }
+
+                    let avg = sum / (k as f64);
+
+                    if (avg - max_energy).abs() < tolerance {
+                        result.k = states.len();
+                        result.iterations = n;
+                        break 'main_loop;
+                    }
+                }
+                _ => {}
+            }
+
+            let new_replica = RwLock::new(walkers::mcmc_walk(
                 e,
                 max_energy,
-                replica,
+                &RwLock::new(util::random_point(&states, rng)),
                 config.walker_config.step_dist,
                 config.walker_config.step_count,
                 rng,
             ));
-        });
+            states.push(new_replica);
 
-        // for i in 0..states.len() {
-        //     states[i] = RwLock::new(walkers::mcmc_walk(e, max_energy, &states[i], config.walker_config.step_dist, config.walker_config.step_count, rng));
-        // }
+            states.par_iter_mut().for_each(|replica| {
+                let rng = &mut rand::thread_rng();
+                *replica = RwLock::new(walkers::mcmc_walk(
+                    e,
+                    max_energy,
+                    replica,
+                    config.walker_config.step_dist,
+                    config.walker_config.step_count,
+                    rng,
+                ));
+            });
 
-        if config.debug {
-            plotting::plot_data(
-                "Max Energy",
-                &plot_drawing_area,
-                0.0..(n as f64),
-                -result.max_energies[0]..(result.max_energies[0]),
-                iterations_vec.clone(),
-                result.max_energies.clone(),
-                plotting::Scale::LinearLinear,
-            );
-            println!("max_energy: {}", max_energy);
+            // for i in 0..states.len() {
+            //     states[i] = RwLock::new(walkers::mcmc_walk(e, max_energy, &states[i], config.walker_config.step_dist, config.walker_config.step_count, rng));
+            // }
+
+            if config.debug {
+                // plotting::plot_data(
+                //     "Max Energy",
+                //     &plot_drawing_area,
+                //     0.0..(n as f64),
+                //     -result.max_energies[0]..(result.max_energies[0]),
+                //     iterations_vec.clone(),
+                //     result.max_energies.clone(),
+                //     plotting::Scale::LinearLinear,
+                // );
+                println!("e_i: {}_{}", max_energy, n);
+            }
         }
     }
+    println!("final state: {:?}", states[0].read().unwrap().clone());
 
     return result;
 }

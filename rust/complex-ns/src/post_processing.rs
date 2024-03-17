@@ -1,4 +1,4 @@
-use std::io::Write;
+use std::{io::Write};
 
 use crate::{ns_algo, plotting};
 use plotters::prelude::*;
@@ -124,7 +124,7 @@ impl GraphResults for PostProcessingResult {
 //
 
 fn boltzmann_weight(energy: f64, z: f64, beta: f64) -> f64 {
-    println!("numerator bw: {}", (-1.0 * beta * energy).exp());
+    // println!("numerator bw: {}", (-1.0 * beta * energy).exp());
     return (-1.0 * beta * energy).exp() / z;
 }
 
@@ -167,18 +167,22 @@ pub fn calculate_specific_heat(
     return ndof + ((beta * beta) * (mean_of_square - (mean * mean)));
 }
 
-pub fn post_process(ns_result: ns_algo::NSResult) -> PostProcessingResult {
-    //Find the density of states and the free energy
-
-    //Arbitrary temperature
-    let temperature = 999;
-
+pub fn beta_partition_calculation(ns_result: &ns_algo::NSResult, temperature: f64) -> (f64, f64) {
     //Beta funciton used in free energy
-    let beta = 1.0 / temperature as f64;
+    let beta = 1.0 / temperature;
 
     //Canonical partition function
     let mut z = 0.0;
 
+    for i in 0..(ns_result.iterations) as usize {
+        z += (-1.0 * beta * ns_result.max_energies[i]).exp();
+    }
+
+    return (beta, z);
+}
+
+pub fn post_process(ns_result: ns_algo::NSResult) -> PostProcessingResult {
+    //Find the density of states and the free energy
     let mut density_of_states: Vec<f64> = Vec::new();
     let mut free_energies: Vec<f64> = Vec::new();
 
@@ -189,8 +193,6 @@ pub fn post_process(ns_result: ns_algo::NSResult) -> PostProcessingResult {
     let mut ge_de_vec: Vec<f64> = Vec::new();
 
     for i in 0..(ns_result.iterations) as usize {
-        z += (-1.0 * beta * ns_result.max_energies[i]).exp();
-
         let k_f = ns_result.k as f64;
 
         let ge_de = (1.0 / (k_f + 1.0)) * (k_f / (k_f + 1.0)).powf(i as f64);
@@ -210,19 +212,44 @@ pub fn post_process(ns_result: ns_algo::NSResult) -> PostProcessingResult {
         }
     }
 
-    println!(
-        "cv: {}",
-        calculate_specific_heat(
-            z,
-            beta,
-            ge_de_vec.clone(),
-            ns_result.iterations,
-            ns_result.max_energies.clone(),
-            ns_result.k,
-            ns_result.dimensions,
-        )
-    );
-    println!("z: {}", z);
+    //Arbitrary RANGE of temperatures
+    let temperature_start = 0.0;
+
+    let temperature_end = 100.0;
+
+    //Determines the # of steps
+    let temperature_scale = 1.0;
+
+    //Betas and partition functions for different temperatures
+    let mut betas: Vec<f64> = Vec::new();
+    let mut zs: Vec<f64> = Vec::new();
+
+    for i in (temperature_start * temperature_scale) as usize
+        ..(temperature_end * temperature_scale) as usize
+    {
+        let t = i as f64 / temperature_scale;
+
+        let (beta, z) = beta_partition_calculation(&ns_result, t);
+        betas.push(beta);
+        zs.push(z);
+    }
+
+    for i in 0..betas.len() {
+        println!("z at iteration {}: {}", i, zs[i]);
+
+        println!(
+            "cv: {}",
+            calculate_specific_heat(
+                zs[i],
+                betas[i],
+                ge_de_vec.clone(),
+                ns_result.iterations,
+                ns_result.max_energies.clone(),
+                ns_result.k,
+                ns_result.dimensions,
+            )
+        );
+    }
 
     let mut ge_de_sum: f64 = 0.0;
     //The volume array is now populated in order from min to max energy instead of iteration order
