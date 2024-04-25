@@ -24,6 +24,7 @@ pub struct NSConfig {
 pub enum EndCondition {
     Avg,
     ValueTolerance,
+    None,
 }
 pub struct EndConditionConfig {
     typ: EndCondition,
@@ -170,15 +171,19 @@ pub fn algo(mut config: NSConfig) -> NSResult {
 
                     let avg = sum / (k as f64);
 
-                    if (avg - max_energy).abs() < tolerance {
+
+                    if (avg).abs() < tolerance {
                         result.k = states.len();
                         result.iterations = n;
                         break 'main_loop;
                     }
                 }
+                EndCondition::None => {}
                 _ => {}
             }
 
+
+            //BUG: this below line seems to be causing some issues
             let new_replica = RwLock::new(walkers::mcmc_walk(
                 e,
                 max_energy,
@@ -187,6 +192,7 @@ pub fn algo(mut config: NSConfig) -> NSResult {
                 config.walker_config.step_count,
                 rng,
             ));
+
             states.push(new_replica);
 
             states.par_iter_mut().for_each(|replica| {
@@ -200,6 +206,7 @@ pub fn algo(mut config: NSConfig) -> NSResult {
                     rng,
                 ));
             });
+
 
             // for i in 0..states.len() {
             //     states[i] = RwLock::new(walkers::mcmc_walk(e, max_energy, &states[i], config.walker_config.step_dist, config.walker_config.step_count, rng));

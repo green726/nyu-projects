@@ -38,7 +38,11 @@ fn gaussian_superposition_1d(state: Vec<f64>) -> f64 {
 }
 
 fn sinusoidal_product_4d(state: Vec<f64>) -> f64 {
-    return state[0].sin(); /*  * state[1].sin() * state[2].sin() * state[3].sin(); */
+    return state[0].sin() * state[1].sin() * state[2].sin() * state[3].sin();
+}
+
+fn sinusoidal_1d_translated_up(state: Vec<f64>) -> f64 {
+    return state[0].sin() + 4.0;
 }
 
 fn harmonic_potential(state: Vec<f64>) -> f64 {
@@ -117,18 +121,18 @@ fn lj(state: Vec<f64>) -> f64 {
 fn main() {
     let mut rng = rand::thread_rng();
 
-    //LJ 4 cluster
+    //LJ 3 cluster
     let n = 1000;
-    let d = 15;
+    let d = 9;
     let config = NSConfig::new(
         lj,
-        states_populate(d, n, -1.0..1.0, &mut rng),
+        states_populate(d, n, -10.0..10.0, &mut rng),
         n,
         2000000,
         true,
         walkers::WalkerConfig::new(0.001, 1),
         d,
-        EndConditionConfig::new(ns_algo::EndCondition::Avg, 50, 0.00000001)
+        EndConditionConfig::new(ns_algo::EndCondition::None, 50, 0.000001)
     );
 
     //harmonic potential 1d
@@ -140,6 +144,21 @@ fn main() {
     //     100000,
     //     false,
     //     walkers::WalkerConfig::new(0.0000001, 1),
+    //     1,
+    //     EndConditionConfig::new(ns_algo::EndCondition::Avg, 50, 0.000001)
+    // );
+    
+    //random sinusoidal 1d
+    // let n = 1000;
+    // let config = NSConfig::new(
+    //     sinusoidal_1d_translated_up,
+    //     states_populate(1, n, -20.0..20.0, &mut rng),
+    //     n,
+    //     100000,
+    //     true,
+    //     walkers::WalkerConfig::new(0.0000001, 1),
+    //     1,
+    //     EndConditionConfig::new(ns_algo::EndCondition::Avg, 500, 0.00000000001)
     // );
 
     // harmonic potential 2d
@@ -218,6 +237,7 @@ fn main() {
     //     walkers::WalkerConfig::new(0.001, 3),
     // );
 
+    println!("Starting ns algo");
     let ns_result = ns_algo::algo(config);
 
     println!("min e: {}", ns_result.max_energies.last().unwrap());
